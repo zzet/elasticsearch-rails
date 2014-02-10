@@ -522,16 +522,26 @@ The re-defined method will be used in the indexing methods, such as `index_docum
 
 When you have a more complicated structure/schema, you need to customize the `as_indexed_json` method -
 or perform the indexing separately, on your own.
-For example, let's have an `Article` model, which _has_many_ `Comment`s,
-`Author`s and `Categories`. We might want to define the serialization like this:
+For example, let's have an `Article` model, which `has_many` `Comment`'s,
+`Author`'s and `Categories`. We might want to define the serialization like this:
 
 ```ruby
-def as_indexed_json(options={})
-  self.as_json(
-    include: { categories: { only: :title},
-               authors:    { methods: [:full_name], only: [:full_name] },
-               comments:   { only: :text }
-             })
+
+class Article
+  include Elasticsearch::Model
+  # ...
+  has_many :comments
+  has_many :authors
+  has_many :categories
+  # ....
+  def as_indexed_json(options={})
+    self.as_json(
+      include: { categories: { only: :title},
+                 authors:    { methods: [:full_name], only: [:full_name] },
+                 comments:   { only: :text }
+               })
+  end
+  # ...
 end
 
 Article.first.as_indexed_json
